@@ -40,7 +40,7 @@ namespace SlackSvnBotService
             process.Start();
 
             string currentLine = string.Empty;
-            var payload = new Payload();
+            var payload = new Revision();
             while (!process.StandardOutput.EndOfStream)
             {
                 currentLine = process.StandardOutput.ReadLine();
@@ -48,7 +48,7 @@ namespace SlackSvnBotService
                 if (details.Length > 1)
                 {
                     lastRevisionId = details[0].Trim();
-                    payload.Revision = details[0].Trim();
+                    payload.RevisionId = details[0].Trim();
                     payload.Server = "https://subversion.cleverdevices.com/svnext/CleverConfig/!svn/bc/11000";
                     payload.Author = details[1].Trim();
                     payload.Log = process.StandardOutput.ReadLine();
@@ -60,7 +60,7 @@ namespace SlackSvnBotService
             string format = "%7B%22revision%22%3A{0}%2C%22url%22%3A%22{1}%22%2C%22author%22%3A%22{2}%22%2C%22log%22%3A%22Log%20info%22%7D";
 
             var postData = HttpUtility.UrlEncode(JsonConvert.SerializeObject(payload));
-            var data = Encoding.ASCII.GetBytes(string.Format("payload={0}", string.Format(format, 11000, string.Format(@"https://subversion.cleverdevices.com/svnext/CleverConfig/!svn/bc/{0}", payload.Revision.Replace("r", string.Empty)), "Test")));
+            var data = Encoding.ASCII.GetBytes(string.Format("payload={0}", string.Format(format, 11000, string.Format(@"https://subversion.cleverdevices.com/svnext/CleverConfig/!svn/bc/{0}", payload.RevisionId.Replace("r", string.Empty)), "Test")));
             data = Encoding.ASCII.GetBytes(string.Format("payload={0}", postData));
             var request = (HttpWebRequest)WebRequest.Create(@"https://surgellc.slack.com/services/hooks/subversion?token=uGASagl3rShvSCT9VP1sXsjG");
             request.Method = "POST";
@@ -74,19 +74,5 @@ namespace SlackSvnBotService
 
             var response = (HttpWebResponse)request.GetResponse();
         }
-    }
-
-    [JsonObject("payload")]
-    public class Payload
-    {
-        [JsonProperty("revision")]
-        public string Revision { get; set; }
-        [JsonProperty("url")]
-        public string Server { get; set; }
-        [JsonProperty("author")]
-        public string Author { get; set; }
-        [JsonProperty("log")]
-        public string Log { get; set; }
-    }
-}
+    }   
 }
